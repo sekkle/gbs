@@ -1028,9 +1028,6 @@ isValidPrimary( refString )
 		case "p90":
 		case "kriss":
 		case "ump45":
-		case "barrett":
-		case "wa2000":
-		case "m21":
 		case "cheytac":
 		case "rpd":
 		case "sa80":

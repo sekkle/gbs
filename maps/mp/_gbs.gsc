@@ -41,43 +41,12 @@ watchLoadout()
 
 watchWeapons()
 {
-    /*
-    for(;;)
-    {
-        self waittill("weapon_change", weapon);
-        wait 0.25;
-        /* Disallowed Weapons 
-        if(weapon == "onemanarmy_mp" || weapon == "riotshield_mp" || isSubStr(weapon, "m16_eotech") || isSubStr(weapon, "_heartbeat_") || isSubStr(weapon, "akimbo") || isSubStr(weapon, "fal") || isSubStr(weapon, "m21") || isSubStr(weapon, "wa2000") || isSubStr(weapon, "barrett") || isSubStr(weapon, "rpd") || isSubStr(weapon, "_rof_") ||  isSubStr(weapon, "_shotgun_") || isSubStr(weapon, "m79") || isSubStr(weapon, "javelin") || isSubStr(weapon, "rpg") || isSubStr(weapon, "at4") || isSubStr(weapon, "glock_akimbo") || isSubStr(weapon, "pp2000_akimbo") || isSubStr(weapon, "beretta393_akimbo") || isSubStr(weapon, "tmp_akimbo") || isSubStr(weapon, "_gl_") || isSubStr(weapon, "spas12") || isSubStr(weapon, "striker") || isSubStr(weapon, "model") || isSubStr(weapon, "aa12") || isSubStr(weapon, "ranger") || isSubStr(weapon, "m1014"))
-        {
-            self iPrintlnBold("Disallowed Weapon: [^1" + weapon + "^7]");
-            if(weapon == self.primaryWeapon)
-            {
-                self takeWeapon(weapon);
-                self giveWeapon("ump45_silencer_mp");
-                self switchToWeapon("ump45_silencer_mp");
-            }
-            else if(weapon == self.secondaryWeapon && weapon != "onemanarmy_mp")
-            {
-                self takeWeapon(weapon);
-                self giveWeapon("tmp_mp");
-                self switchToWeapon("tmp_mp");
-            }
-            else if(weapon == "onemanarmy_mp")
-            {
-                self takeWeapon(weapon);
-                self giveWeapon("tmp_mp");
-                self switchToWeapon("tmp_mp");
-            }
-        }
-    }
-    */
-
     /* Disallowed Weapons*/
-
     for(;;)
     {
         self waittill("weapon_change", newWeapon);
-        if(weaponClass(newWeapon) == "rocketlauncher" || weaponClass(newWeapon) == "spread")
+        if(weaponClass(newWeapon) == "rocketlauncher" || weaponClass(newWeapon) == "spread"
+            || isSubStr(newWeapon, "fal") || isSubStr(newWeapon, "rpd") || isSubStr(newWeapon, "m16_eotech"))
         {
             if(newWeapon == self.primaryWeapon)
                 replacementWeapon = "ump45_mp";
