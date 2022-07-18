@@ -30,7 +30,6 @@ onPlayerSpawned()
     {
         self waittill("spawned_player");
         self iPrintln("IW4: [^1Gamebattles^7]");
-        self thread letsDoThis();
     }
 }
 
@@ -42,11 +41,12 @@ watchLoadout()
 
 watchWeapons()
 {
+    /*
     for(;;)
     {
         self waittill("weapon_change", weapon);
         wait 0.25;
-        /* Disallowed Weapons */
+        /* Disallowed Weapons 
         if(weapon == "onemanarmy_mp" || weapon == "riotshield_mp" || isSubStr(weapon, "m16_eotech") || isSubStr(weapon, "_heartbeat_") || isSubStr(weapon, "akimbo") || isSubStr(weapon, "fal") || isSubStr(weapon, "m21") || isSubStr(weapon, "wa2000") || isSubStr(weapon, "barrett") || isSubStr(weapon, "rpd") || isSubStr(weapon, "_rof_") ||  isSubStr(weapon, "_shotgun_") || isSubStr(weapon, "m79") || isSubStr(weapon, "javelin") || isSubStr(weapon, "rpg") || isSubStr(weapon, "at4") || isSubStr(weapon, "glock_akimbo") || isSubStr(weapon, "pp2000_akimbo") || isSubStr(weapon, "beretta393_akimbo") || isSubStr(weapon, "tmp_akimbo") || isSubStr(weapon, "_gl_") || isSubStr(weapon, "spas12") || isSubStr(weapon, "striker") || isSubStr(weapon, "model") || isSubStr(weapon, "aa12") || isSubStr(weapon, "ranger") || isSubStr(weapon, "m1014"))
         {
             self iPrintlnBold("Disallowed Weapon: [^1" + weapon + "^7]");
@@ -55,14 +55,12 @@ watchWeapons()
                 self takeWeapon(weapon);
                 self giveWeapon("ump45_silencer_mp");
                 self switchToWeapon("ump45_silencer_mp");
-                self maps\mp\gametypes\_weapons::updateMoveSpeedScale("ump45_silencer_mp");
             }
             else if(weapon == self.secondaryWeapon && weapon != "onemanarmy_mp")
             {
                 self takeWeapon(weapon);
                 self giveWeapon("tmp_mp");
                 self switchToWeapon("tmp_mp");
-                self maps\mp\gametypes\_weapons::updateMoveSpeedScale("tmp_mp");
             }
             else if(weapon == "onemanarmy_mp")
             {
@@ -70,6 +68,27 @@ watchWeapons()
                 self giveWeapon("tmp_mp");
                 self switchToWeapon("tmp_mp");
             }
+        }
+    }
+    */
+
+    /* Disallowed Weapons*/
+
+    for(;;)
+    {
+        self waittill("weapon_change", newWeapon);
+        if(weaponClass(newWeapon) == "rocketlauncher" || weaponClass(newWeapon) == "spread")
+        {
+            if(newWeapon == self.primaryWeapon)
+                replacementWeapon = "ump45_mp";
+            else
+                replacementWeapon = "tmp_mp";
+            
+            self takeWeapon(newWeapon);
+            self giveWeapon(replacementWeapon);
+            self setSpawnWeapon(replacementWeapon);
+
+            self iPrintln("Diallowed Weapon: [^1" + newWeapon + "^7] Replaced With: [^2" + replacementWeapon + "^7]");
         }
     }
 }
@@ -118,10 +137,4 @@ smoothEndGame()
         setSlowMotion(0.25, lerpValue, 0);
         wait .085;
     }
-}
-
-letsDoThis()
-{
-    level waittill("prematch_over");
-    self playSound("UK_1mc_boost_01");
 }

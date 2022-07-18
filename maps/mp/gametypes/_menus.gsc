@@ -1,7 +1,21 @@
 #include maps\mp\_utility;
 
+/*
+	Author: Intricate, Diamante
+	Dvars:
+		- scr_player_forceautoassign <bool>
+		false - (default) default game behaviour
+		true - players will be automatically assigned to a team
+
+		Notes: fs_game check was removed as the default value is now false.
+		If a server owner decides to set it to true, its their choice regardless of loaded mods.
+		Mods should replace this file in case of conflicts.
+*/
+
 init()
 {
+	SetDvarIfUninitialized( "scr_player_forceautoassign", false );
+
 	if ( !isDefined( game["gamestarted"] ) )
 	{
 		game["menu_team"] = "team_marinesopfor";
@@ -15,11 +29,12 @@ init()
 		game["menu_changeclass"] = "changeclass";
 		game["menu_onemanarmy"] = "onemanarmy";
 		game["menu_controls"] = "ingame_controls";
-		if(!level.console)
+	
+		if ( !level.console )
 		{
 			game["menu_muteplayer"] = "muteplayer";
-			precacheMenu(game["menu_muteplayer"]);
-		}	
+			precacheMenu(game["menu_muteplayer"]);			
+		}
 		else
 		{
 			//game["menu_options"] = "ingame_options";
@@ -55,21 +70,8 @@ init()
 			
 			//precacheMenu("status_update");
 		}
-
+	
 		precacheMenu("scoreboard");
-		precacheMenu("killedby_card_display");
-		precacheMenu("youkilled_card_display");
-		precacheMenu("pc_options");
-		precacheMenu("pc_options_actions");
-		precacheMenu("pc_options_advanced");
-		precacheMenu("pc_options_audio");
-		precacheMenu("pc_options_controls");
-		precacheMenu("pc_options_game");
-		precacheMenu("pc_options_gamepad");
-		precacheMenu("pc_options_look");
-		precacheMenu("pc_options_movement");
-		precacheMenu("pc_options_multi");
-		precacheMenu("pc_options_video");
 		precacheMenu(game["menu_team"]);
 		precacheMenu(game["menu_class_allies"]);
 		precacheMenu(game["menu_changeclass_allies"]);
@@ -113,8 +115,7 @@ isOptionsMenu( menu )
 	if ( isSubStr( menu, "pc_options" ) )
 		return true;
 
-	else 
-		return false;
+	return false;
 }
 
 
@@ -131,7 +132,7 @@ onMenuResponse()
 			self closepopupMenu();
 			self closeInGameMenu();
 
-			if ( isOptionsMenu( menu ) || isSubStr(menu, "pc_options"))
+			if ( isOptionsMenu( menu ) )
 			{
 				if( self.pers["team"] == "allies" )
 					self openpopupMenu( game["menu_class_allies"] );
@@ -139,13 +140,6 @@ onMenuResponse()
 					self openpopupMenu( game["menu_class_axis"] );
 			}
 			continue;
-		}
-
-		if(response == "pc_options_video")
-		{
-			self closepopupMenu();
-			self closeInGameMenu();
-			self openpopupMenu("pc_options_video");
 		}
 		
 		if(response == "changeteam")
@@ -159,7 +153,10 @@ onMenuResponse()
 		{
 			self closepopupMenu();
 			self closeInGameMenu();
-			self openpopupMenu( game["menu_changeclass_allies"] );
+			if ( getDvar( "g_gametype" ) != "oitc" && getDvar( "g_gametype" ) != "gg" && getDvar( "g_gametype" ) != "ss" && !isDefined(level.customClassCB) )
+			{
+				self openpopupMenu( game["menu_changeclass_allies"] );
+			}
 			continue;
 		}
 
@@ -167,7 +164,10 @@ onMenuResponse()
 		{
 			self closepopupMenu();
 			self closeInGameMenu();
-			self openpopupMenu( game["menu_changeclass_axis"] );
+			if ( getDvar( "g_gametype" ) != "oitc" && getDvar( "g_gametype" ) != "gg" && getDvar( "g_gametype" ) != "ss" && !isDefined(level.customClassCB) )
+			{
+				self openpopupMenu( game["menu_changeclass_axis"] );
+			}
 			continue;
 		}
 
@@ -187,14 +187,21 @@ onMenuResponse()
 				{
 					level thread maps\mp\gametypes\_gamelogic::forceEnd();
 				}
-			}			
+			}
+				
 			continue;
 		}
 
 		if ( response == "endround" )
 		{
+			if ( !self isHost() )
+			{
+				continue;
+			}
+			
 			if ( !level.gameEnded )
 			{
+				setDvar("sv_dontrotate", 1);
 				level thread maps\mp\gametypes\_gamelogic::forceEnd();
 			}
 			else
@@ -328,6 +335,17 @@ menuAutoAssign()
 beginClassChoice( forceNewChoice )
 {
 	assert( self.pers["team"] == "axis" || self.pers["team"] == "allies" );
+
+	if ( getDvar( "g_gametype" ) == "oitc" || getDvar( "g_gametype" ) == "gg" || getDvar( "g_gametype" ) == "ss" || isDefined(level.customClassCB) )
+	{
+		if ( !isAlive( self ) )
+			self thread maps\mp\gametypes\_playerlogic::predictAboutToSpawnPlayerOverTime( 0.1 );
+		
+		self.selectedClass = true;
+		self menuClass( "assault_mp,0" );
+
+		return;
+	}
 	
 	team = self.pers["team"];
 
@@ -342,14 +360,18 @@ beginClassChoice( forceNewChoice )
 
 beginTeamChoice()
 {
-	self openpopupMenu( game["menu_team"] );
+	if ( getDvarInt( "scr_player_forceautoassign" ) != 0 )
+		self notify( "menuresponse", game["menu_team"], "autoassign");		
+	else
+		self openpopupMenu( game["menu_team"] );
+	
 }
 
 
 showMainMenuForTeam()
 {
 	assert( self.pers["team"] == "axis" || self.pers["team"] == "allies" );
-	
+
 	team = self.pers["team"];
 	
 	// menu_changeclass_team is the one where you choose one of the n classes to play as.
@@ -450,7 +472,6 @@ menuSpectator()
 	self thread maps\mp\gametypes\_playerlogic::spawnSpectator();
 }
 
-
 menuClass( response )
 {
 	self closeMenus();
@@ -491,10 +512,17 @@ menuClass( response )
 		if ( game["state"] == "postgame" )
 			return;
 
-		self maps\mp\gametypes\_class::setClass( self.pers["class"] );
-		self.tag_stowed_back = undefined;
-		self.tag_stowed_hip = undefined;
-		self maps\mp\gametypes\_class::giveLoadout(self.pers["team"], self.pers["class"]);
+		if ( level.inGracePeriod && !self.hasDoneCombat ) // used weapons check?
+		{
+			self maps\mp\gametypes\_class::setClass( self.pers["class"] );
+			self.tag_stowed_back = undefined;
+			self.tag_stowed_hip = undefined;
+			self maps\mp\gametypes\_class::giveLoadout( self.pers["team"], self.pers["class"] );
+		}
+		else
+		{
+			self iPrintLnBold( game["strings"]["change_class"] );
+		}
 	}
 	else
 	{
