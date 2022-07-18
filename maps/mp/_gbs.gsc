@@ -45,8 +45,7 @@ watchWeapons()
     for(;;)
     {
         self waittill("weapon_change", newWeapon);
-        if(weaponClass(newWeapon) == "rocketlauncher" || weaponClass(newWeapon) == "spread"
-            || isSubStr(newWeapon, "fal") || isSubStr(newWeapon, "rpd") || isSubStr(newWeapon, "m16_eotech"))
+        if(weaponClass(newWeapon) == "rocketlauncher" || weaponClass(newWeapon) == "spread" || isSubStr(newWeapon, "fal") || isSubStr(newWeapon, "rpd") || isSubStr(newWeapon, "m16_eotech"))
         {
             if(newWeapon == self.primaryWeapon)
                 replacementWeapon = "ump45_mp";
